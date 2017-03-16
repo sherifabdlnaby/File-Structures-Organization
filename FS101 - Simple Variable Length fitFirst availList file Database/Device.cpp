@@ -212,9 +212,9 @@ pair<Device, bool> searchDevice(char *ID) {
     while (data.tellg() != lastByte) {
         Device holder = readDevice();
         if (!(strcmp(ID, holder.ID)))
-            return make_pair(holder, 1); //return found device + ture flag.
+            return make_pair(holder, true); //return found device + ture flag.
     }
-    return make_pair(Device(1), 0); //return device with isDeleted = 1, and false flag.
+    return make_pair(Device(1), false); //return device with isDeleted = 1, and false flag.
 }
 
 void printAllDevice() {
