@@ -178,7 +178,7 @@ bool deleteDevice(char *ID) {
         int offset = data.tellg();
         Device holder = readDevice();
         if (!(strcmp(holder.ID, ID))) {
-            flag = availList; //add current availList header to current record.
+            flag = availList;        //add current availList header to current record.
             updateAvailList(offset); //Update AvailList with the new deleted record.
             data.seekg(offset + sizeof(int), ios::beg); //Seek to flag byte. (Offset + sizeByte)
             data.write((const char *) &flag, sizeof(int));
@@ -197,6 +197,10 @@ bool updateDevice(char *ID, Device &obj) {
         if (!(strcmp(holder.ID, ID))) {
             data.seekg(offset, ios::beg); //Seek to offset of the Record
             data.read((char *) &size, sizeof(int));
+            data.seekg(offset+ sizeof(size), ios::beg); //Seek to flagCell directly before writing
+                                                        //^FIXES MacOS/XcodeCompiler misbehaviour #TODO
+                                                        // working as expected on Windows(minGW), only MacOs/XcodeCompiler (Mixing read and write without seeking seeks the pointers to eof)
+            //data.tellg();                             //<-FIXES MacOS/XcodeCompiler misbehaviour too (Surprisingly?)
             if (size >= obj.getRecordSize()) { //New record can fit into old record.
                 data.write((const char *) &flag, sizeof(int));
                 data << obj.ID << '#' << obj.name << '#' << obj.brand << "#";
@@ -220,7 +224,7 @@ pair<Device, bool> searchDevice(char *ID) {
         if (!(strcmp(ID, holder.ID)))
             return make_pair(holder, true); //return found device + ture flag.
     }
-    return make_pair(Device(1), false); //return empty device with isDeleted = 1, and false flag.
+    return make_pair(Device(1), false);     //return empty device with isDeleted = 1, and false flag.
 }
 
 vector<Device> loadAllDevices(){
