@@ -58,9 +58,9 @@ int main() {
         {
             cout << "Enter ID: " << endl;
             cin >> IDHolder;
-            pair<Device,int> search = searchDevice(IDHolder);
+            pair<Device,bool> search = searchDevice(IDHolder);
             if( search.second )
-                cout << search.first << endl;
+                cout << "Found: " << search.first << endl;
             else
                 cout << "Device Not Found!" << endl;
         }

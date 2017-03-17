@@ -104,6 +104,7 @@ int compactFile() {
 int checkAvail(int size) {
     int offset = availList; //Header
     int recordSize;
+    int lastOffset;
     int nextOffset;
     while (offset > -1) //CHECK (-1 = availList is empty)
     {
@@ -111,10 +112,19 @@ int checkAvail(int size) {
         data.read((char *) &recordSize, sizeof(int));
         data.read((char *) &nextOffset, sizeof(int));
         if (recordSize >= size) {
-            updateAvailList(nextOffset); //Update AvailList
+            if(offset == availList)     //If it is the availList header.
+                updateAvailList(nextOffset); //set a New AvailList Header
+            else //else Update lastOffset with the NextOffset (to remove current offset from the LinkedList)
+            {
+                data.seekp(lastOffset+ sizeof(int),ios::beg);
+                data.write((const char*)&nextOffset, sizeof(int)); //Write the nextOffset to LastOffset;
+            }
             return offset;
         } else
+        {
+            lastOffset = offset; //Save last-offset
             offset = nextOffset; //Iterate
+        }
     }
     return -1;
 }
@@ -178,10 +188,10 @@ bool deleteDevice(char *ID) {
         int offset = data.tellg();
         Device holder = readDevice();
         if (!(strcmp(holder.ID, ID))) {
-            flag = availList;        //add current availList header to current record.
-            updateAvailList(offset); //Update AvailList with the new deleted record.
+            flag = availList; //add current availList header to current record.
             data.seekg(offset + sizeof(int), ios::beg); //Seek to flag byte. (Offset + sizeByte)
             data.write((const char *) &flag, sizeof(int));
+            updateAvailList(offset); //Update AvailList with the new deleted record.
             return true;
         }
     }

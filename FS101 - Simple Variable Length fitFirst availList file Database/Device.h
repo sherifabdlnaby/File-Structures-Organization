@@ -19,7 +19,7 @@ extern int lastByte;
 extern const int cellHeaderSize;
 
 //File related Functions.
-void updateAvailList(int newOffset);
+void updateAvailList(int newOffset); //update both the Global Variable and FileHeader
 bool initializeFile();
 bool createFile();
 int  compactFile();
