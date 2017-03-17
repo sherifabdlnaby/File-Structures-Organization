@@ -10,11 +10,11 @@ int main() {
             return 0;
         }
     //////////ValueHolderVars//////////
-    int n = 0;
-    char IDHolder[20];
-    Device placeHolder;
+    int n = 0; //for options.
+    char IDHolder[20];  //for search/delete by-ID
+    Device placeHolder; //for adding a Device.
     ///////////////////////////////////
-    while(n != 6)
+    while(n != 7)
     {
         cout << "-----------------------------------\n"
              << "Welcome, To GSMArena DBMS o8o8o...\n"
@@ -70,10 +70,18 @@ int main() {
         }
         else if (n == 6)
         {
-            //compactDeviceFile(); //TODO
+            int beforeCompact = lastByte; //File Size before compact.
+            compactFile();
+            int afterCompact = lastByte; //lastByte is updated by compactFile();
+            cout << "File size before : " << beforeCompact << " Byte" << endl;
+            cout << "File size after  : " << afterCompact  << " Byte" << endl;
+            cout << "All Internal / External fragmentation cleared!"  << endl;
+            cout << "------> Total of : " << beforeCompact - afterCompact << " Bytes saved." << endl;
+
         }
         else if (n == 7)
         {
+            cout << "All Data Saved!. Exiting..." << endl;
             break;
         }
         else

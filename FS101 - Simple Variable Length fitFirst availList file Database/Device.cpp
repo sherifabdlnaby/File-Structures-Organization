@@ -11,22 +11,19 @@ int availList;
 int lastByte;
 const int cellHeaderSize = sizeof(int) + sizeof(availList); //Cell Header = Int(for size) + size for availList;
 
-Device::Device(bool isDeleted) {
+Device::Device() {
     ID = new char[20];
     name = new char[30];
     brand = new char[30];
     price = 0;
-    this->isDeleted = isDeleted;
 }
 
-Device::Device(char *ID, char *name, char *brand, float price) : price(price) {
-    ID = new char[20];
-    name = new char[30];
-    brand = new char[30];
-    strcpy(Device::ID, ID);
-    strcpy(Device::name, name);
-    strcpy(Device::brand, brand);
-    isDeleted = 0;
+Device::Device(bool isDeleted) {
+    ID = new char[0];
+    name = new char[0];
+    brand = new char[0];
+    price = 0;
+    this->isDeleted = isDeleted;
 }
 
 Device::Device(const Device &obj) {
@@ -93,8 +90,18 @@ bool createFile() {
     return initializeFile(); //initialize files and global variables.
 }
 
-int checkAvail(int size) {
+int compactFile() {
+    vector<Device> allDevices = loadAllDevices(); //load all all not-deleted records.
+    data.close(); //Close existing file
+    createFile(); //Create new files with new availList, etc.
+    for (int i = 0; i < allDevices.size(); ++i) {
+        writeDevice(allDevices[i]);
+    }
+    return 0;
+}
 
+
+int checkAvail(int size) {
     int offset = availList; //Header
     int recordSize;
     int nextOffset;
@@ -114,8 +121,8 @@ int checkAvail(int size) {
 
 void updateAvailList(int newOffset) {
     availList = newOffset;      //Update global Variable.
-    int origin = data.tellg(); //Save your Current position
-    data.seekg(0, ios::beg);   //Seek to the File's Header
+    int origin = data.tellg();  //Save your Current position
+    data.seekg(0, ios::beg);    //Seek to the File's Header
     data.write((const char *) &newOffset, sizeof(int)); //Update file's Header.
     data.seekg(origin, ios::beg); //Seek Back to origin (Current Position).
 }
@@ -147,13 +154,13 @@ void writeDevice(const Device &obj) {
     int flag = -2; //-2 = not Deleted obj.
     int recordSize = obj.getRecordSize();
     int offset = checkAvail(recordSize); //Get a big enough empty space from availList (returns -1 if list is empty)
-    if (offset != -1) {
-        data.seekg(offset + sizeof(int), ios::beg);
+    if (offset != -1) { //There is a big enough deleted Record in availList for the new one.
+        data.seekg(offset + sizeof(int), ios::beg); //Skip sizeCell in recordHeader(We don't change oldRecord size)
         data.write((const char *) &flag, sizeof(int));
         data << obj.ID << '#' << obj.name << '#' << obj.brand << "#";
         data.write((const char *) &obj.price, sizeof(float));
         return;
-    } else { //Append at the end of the file
+    } else { //Append at the end of the file.
         data.seekg(0, ios::end);
         data.write((const char *) &recordSize, sizeof(int));
         data.write((const char *) &flag, sizeof(int));
@@ -182,8 +189,7 @@ bool deleteDevice(char *ID) {
 }
 
 bool updateDevice(char *ID, Device &obj) {
-    int size;
-    int flag = -2; //-2 = not Deleted Flag
+    int size, flag = -2; //-2 = not Deleted Flag
     data.seekg(sizeof(availList), ios::beg);
     while (data.tellg() != lastByte) { //Search for Device.
         int offset = data.tellg();
@@ -214,8 +220,22 @@ pair<Device, bool> searchDevice(char *ID) {
         if (!(strcmp(ID, holder.ID)))
             return make_pair(holder, true); //return found device + ture flag.
     }
-    return make_pair(Device(1), false); //return device with isDeleted = 1, and false flag.
+    return make_pair(Device(1), false); //return empty device with isDeleted = 1, and false flag.
 }
+
+vector<Device> loadAllDevices(){
+        data.seekg(sizeof(availList), ios::beg); //Read from the beginning
+        vector<Device> allDevices;
+        Device holder;
+        while (data.tellg() != lastByte) {
+            holder = readDevice();
+            if(!holder.isDeleted)
+            {
+                allDevices.push_back(holder); //Add non-deleted devices.
+            }
+        }
+    return allDevices;
+};
 
 void printAllDevice() {
     data.seekg(sizeof(availList), ios::beg); //Read from the beginning of the file(and Skip availList Header)
