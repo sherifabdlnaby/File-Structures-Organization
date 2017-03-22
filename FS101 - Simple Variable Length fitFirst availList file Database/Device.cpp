@@ -37,6 +37,12 @@ Device::Device(const Device &obj) {
     isDeleted = obj.isDeleted;
 }
 
+Device::~Device(){
+    delete[] ID;
+    delete[] name;
+    delete[] brand;
+}
+
 Device &Device::operator=(const Device &obj) {
     strcpy(ID, obj.ID);
     strcpy(name, obj.name);
@@ -45,6 +51,7 @@ Device &Device::operator=(const Device &obj) {
     isDeleted = obj.isDeleted;
     return *this;
 }
+
 
 std::ostream &operator<<(std::ostream &os, const Device &device1) {
     if (device1.isDeleted) //If it is deleted don't print It.
