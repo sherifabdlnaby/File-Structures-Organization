@@ -368,9 +368,7 @@ void searchByModel(string model) {
         while(itr != -1)
         {
             int offset = searchID(inverted[itr].ID);
-            if(offset == -1) //If ID doesn't exist(Was deleted before) Skip.
-                continue;
-            else
+            if(offset != -1) //If ID exist.
                 cout << readPrinter(offset);
             itr = inverted[itr].next;
         }
@@ -407,9 +405,7 @@ void searchByModelPrice(string model, float price) {
         {
 
             int offset = searchID(inverted[itr].ID);
-            if(offset == -1) //If ID doesn't exist(Was deleted before) Skip.
-                continue;
-            else {
+            if(offset != -1){ //If ID Exists...
                 printer tmp = readPrinter(offset);
                 if(tmp.price == price)
                     cout << tmp;
